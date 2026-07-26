@@ -169,9 +169,12 @@ input[type="range"]::-moz-range-thumb{
 .minmax{display:flex; justify-content:space-between; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted-2);}
 
 .unit-list{display:flex; flex-direction:column; gap:10px;}
-.unit-row{border:1px solid var(--line); border-radius:var(--radius-s); padding:10px 12px; transition:border-color .15s ease;}
+.unit-row{border:1px solid var(--line); border-radius:var(--radius-s); padding:10px 12px; transition:border-color .15s ease, box-shadow .15s ease;}
 .unit-row.status-overdue{border-color:rgba(139,58,43,0.4);}
 .unit-row.status-due{border-color:rgba(184,134,11,0.4);}
+.unit-row.focused{border-color:var(--ink); box-shadow:0 0 0 2px rgba(27,27,27,0.14);}
+.focus-readout{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--ink); margin-top:2px;}
+.focus-readout b{color:var(--ink);}
 .u-top{display:flex; align-items:center; gap:8px; font-family:'JetBrains Mono',monospace;}
 .u-id{font-size:11.5px; font-weight:700; color:var(--ink); white-space:nowrap;}
 .u-model{font-size:10px; color:var(--muted); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
@@ -243,13 +246,17 @@ footer .f-r{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--
 const CLASSES = [
   {
     id:"crawler", cat:"tracked", num:"01",
-    name:"Crawler Crane", model:"incl. SANY SCC38000TM / CRAWLER CLASS",
-    desc:"Tracked heavy-lift cranes on a rugged crawler undercarriage. TWC's crawler fleet spans 50T to 2,200T.",
+    name:"Crawler Crane", model:"80T–2,200T lineup / CRAWLER CLASS",
+    desc:"Tracked heavy-lift cranes on a rugged crawler undercarriage. TWC's crawler fleet spans 50T to 2,200T across six catalogued classes.",
     intervalDays:120,
+    tonnageFocus:true,
     units:[
-      {id:"CR-01", model:"SANY SCC38000TM", daysSince:40, breakdowns:1},
-      {id:"CR-02", model:"Demag CC2800-1", daysSince:98, breakdowns:3},
-      {id:"CR-03", model:"Kobelco CKE2500", daysSince:131, breakdowns:4}
+      {id:"CR-01", model:"IHI/DCH DCH800", tonnage:80, daysSince:18, breakdowns:0},
+      {id:"CR-02", model:"XCMG XLC150A", tonnage:150, daysSince:40, breakdowns:1},
+      {id:"CR-03", model:"XCMG XGC400-I", tonnage:400, daysSince:98, breakdowns:3},
+      {id:"CR-04", model:"XCMG XGC15000A", tonnage:1000, daysSince:72, breakdowns:2},
+      {id:"CR-05", model:"XCMG XGC16000", tonnage:1250, daysSince:131, breakdowns:4},
+      {id:"CR-06", model:"SANY SCC38000TM", tonnage:2200, daysSince:12, breakdowns:0}
     ]
   },
   {
@@ -344,10 +351,10 @@ CLASSES.forEach(c => {
     `<a href="#${c.id}" data-cat="${c.cat}"><span class="dot" style="background:${meta.dot}"></span>${c.name}<span class="flag-count" id="navflag-${c.id}">0</span></a>`);
 
   const unitRows = c.units.map(u => `
-    <div class="unit-row" id="row-${c.id}-${u.id}">
+    <div class="unit-row" id="row-${c.id}-${u.id}" data-tonnage="${u.tonnage || ''}">
       <div class="u-top">
         <span class="u-id">${u.id}</span>
-        <span class="u-model">${u.model}</span>
+        <span class="u-model">${u.model}${u.tonnage ? ` · ${u.tonnage}T` : ``}</span>
         <span class="badge" id="badge-${c.id}-${u.id}"></span>
       </div>
       <div class="u-bar"><div class="u-bar-fill" id="bar-${c.id}-${u.id}"></div></div>
@@ -375,6 +382,14 @@ CLASSES.forEach(c => {
         </div>
       </div>
 
+      ${c.tonnageFocus ? `
+      <div class="slider-block">
+        <div class="top-row"><span>Focus tonnage</span><b id="tonnageVal-${c.id}">${c.units[0].tonnage}T</b></div>
+        <input type="range" id="tonnage-${c.id}" min="${Math.min(...c.units.map(u=>u.tonnage))}" max="${Math.max(...c.units.map(u=>u.tonnage))}" value="${Math.min(...c.units.map(u=>u.tonnage))}" step="1">
+        <div class="minmax"><span>${Math.min(...c.units.map(u=>u.tonnage))}T</span><span>${Math.max(...c.units.map(u=>u.tonnage))}T</span></div>
+        <div class="focus-readout" id="focusModel-${c.id}"></div>
+      </div>` : ``}
+
       <div class="slider-block">
         <div class="top-row"><span>Forecast window</span><b id="forecastVal-${c.id}">+0 d</b></div>
         <input type="range" id="forecast-${c.id}" min="0" max="90" value="0" step="5">
@@ -387,6 +402,8 @@ CLASSES.forEach(c => {
     </div>
   </div>`);
 });
+
+const focusedUnit = {};
 
 function update(c){
   const forecastInput = document.getElementById(`forecast-${c.id}`);
@@ -405,6 +422,7 @@ function update(c){
 
     const row = document.getElementById(`row-${c.id}-${u.id}`);
     row.className = `unit-row status-${status}`;
+    if (focusedUnit[c.id] === u.id) row.classList.add("focused");
 
     const badge = document.getElementById(`badge-${c.id}-${u.id}`);
     badge.className = `badge ${status}`;
@@ -427,6 +445,27 @@ function update(c){
   return flaggedCount;
 }
 
+function updateTonnageFocus(c){
+  const input = document.getElementById(`tonnage-${c.id}`);
+  const raw = Number(input.value);
+
+  let nearest = c.units[0];
+  let bestDiff = Infinity;
+  c.units.forEach(u => {
+    const diff = Math.abs(u.tonnage - raw);
+    if (diff < bestDiff) { bestDiff = diff; nearest = u; }
+  });
+
+  input.value = nearest.tonnage; // snap the thumb to the real model's tonnage
+  focusedUnit[c.id] = nearest.id;
+
+  document.getElementById(`tonnageVal-${c.id}`).textContent = `${nearest.tonnage}T`;
+  document.getElementById(`focusModel-${c.id}`).innerHTML =
+    `Focused: <b>${nearest.model}</b> (${nearest.id})`;
+
+  update(c);
+}
+
 function updateTotals(){
   let totalUnits = 0, totalFlagged = 0;
   CLASSES.forEach(c => {
@@ -439,9 +478,14 @@ function updateTotals(){
 
 CLASSES.forEach(c => {
   document.getElementById(`forecast-${c.id}`).addEventListener("input", updateTotals);
+  if (c.tonnageFocus) {
+    focusedUnit[c.id] = c.units[0].id;
+    document.getElementById(`tonnage-${c.id}`).addEventListener("input", () => updateTonnageFocus(c));
+  }
 });
 
 updateTotals();
+CLASSES.forEach(c => { if (c.tonnageFocus) updateTonnageFocus(c); });
 </script>
 </body>
 </html>
