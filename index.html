@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TWC Fleet Configurator — Crawler, Hydraulic, RT, Lorry & Tower Cranes</title>
+<title>TWC Fleet Configurator — Cranes & SPMTs</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
@@ -18,6 +18,7 @@
   --diagram-bg:#1B1B1B;
   --cyan:#1F6E7A;
   --rust:#8B3A2B;
+  --steel:#3D5A73;
   --radius-s:2px;
   --radius-m:3px;
 }
@@ -178,7 +179,7 @@ footer .f-r{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--
   <div class="hero">
     <div class="eyebrow">TWC — Fleet Reference</div>
     <h1 class="title">Crane Fleet<br><span>Configurator</span></h1>
-    <p class="subtitle">An interactive index of TWC's crane fleet — crawler, hydraulic, rough terrain, lorry-mounted and tower — drawn from the actual equipment classes TWC operates. Adjust radius and reach on each unit to see how rated capacity responds, the same trade-off crews read off a load chart on site. Photo placeholders are marked for site and yard photography.</p>
+    <p class="subtitle">An interactive index of TWC's heavy lift and haulage fleet — crawler, hydraulic, rough terrain, lorry-mounted and tower cranes, plus self-propelled modular trailers — drawn from the actual equipment classes TWC operates. Adjust the sliders on each unit to see how rated capacity responds, the same trade-off crews read off a load chart or axle-line count on site. Photo placeholders are marked for site and yard photography.</p>
 
     <div class="hero-grid">
       <div class="photo-slot hero-photo">
@@ -189,7 +190,7 @@ footer .f-r{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--
         <div class="dim">suggested 16:9 · landscape · on-site</div>
       </div>
       <div class="hero-stats">
-        <div class="hero-stat"><span class="k">Crane classes indexed</span><span class="v">05</span></div>
+        <div class="hero-stat"><span class="k">Equipment classes indexed</span><span class="v">06</span></div>
         <div class="hero-stat"><span class="k">Fleet size (all cranes)</span><span class="v">579</span></div>
         <div class="hero-stat"><span class="k">Max rated capacity</span><span class="v">2,200<span class="unit">t</span></span></div>
         <div class="hero-stat"><span class="k">Operating since</span><span class="v">1978</span></div>
@@ -200,7 +201,7 @@ footer .f-r{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--
   <nav class="index-nav" id="indexNav" aria-label="Crane type index"></nav>
 
   <div class="section-head">
-    <div class="num">INDEX / 01–05</div>
+    <div class="num">INDEX / 01–06</div>
     <h2>Fleet by class</h2>
   </div>
 
@@ -219,7 +220,7 @@ const CRANES = [
     id:"crawler", cat:"tracked", num:"01",
     name:"Crawler Crane", model:"incl. SANY SCC38000TM / CRAWLER CLASS",
     desc:"Tracked heavy-lift cranes built on a rugged crawler undercarriage, traversing soft soils and uneven ground with ease. Capacities span 50T to 2,200T, TWC's highest-tonnage unit, for towering builds and major infrastructure lifts.",
-    capMin:50, capMax:2200, capDefault:800, capUnit:"t",
+    capMin:50, capMax:2200, capDefault:800, capUnit:"t", capLabel:"Rated capacity at radius",
     reachLabel:"Working radius", reachMin:8, reachMax:60, reachDefault:20, reachUnit:"m",
     boomLabel:"Boom length", boomMin:30, boomMax:100
   },
@@ -227,7 +228,7 @@ const CRANES = [
     id:"hydraulic", cat:"wheeled", num:"02",
     name:"Hydraulic / Mobile Crane", model:"incl. Grove GMK6300L / ALL-TERRAIN CLASS",
     desc:"Road-legal cranes that move fast between sites, from urban streets to remote yards. TWC's mobile lineup runs 50T to 900T, with all-wheel steer models like the GMK6300L offering an 80m main boom.",
-    capMin:50, capMax:900, capDefault:300, capUnit:"t",
+    capMin:50, capMax:900, capDefault:300, capUnit:"t", capLabel:"Rated capacity at radius",
     reachLabel:"Working radius", reachMin:5, reachMax:40, reachDefault:14, reachUnit:"m",
     boomLabel:"Boom length", boomMin:30, boomMax:80
   },
@@ -235,7 +236,7 @@ const CRANES = [
     id:"roughterrain", cat:"wheeled", num:"03",
     name:"Rough Terrain Crane", model:"incl. SANY SRC900T / RT CLASS",
     desc:"Compact, rugged-tyred cranes for confined and off-road sites. TWC's rough terrain fleet covers 10T to 145T, with variable outrigger configurations for muddy, rocky, or uneven ground.",
-    capMin:10, capMax:145, capDefault:60, capUnit:"t",
+    capMin:10, capMax:145, capDefault:60, capUnit:"t", capLabel:"Rated capacity at radius",
     reachLabel:"Working radius", reachMin:3, reachMax:35, reachDefault:10, reachUnit:"m",
     boomLabel:"Boom length", boomMin:20, boomMax:65
   },
@@ -243,7 +244,7 @@ const CRANES = [
     id:"lorry", cat:"wheeled", num:"04",
     name:"Lorry Crane", model:"TWC-LC / LORRY-MOUNTED CLASS",
     desc:"Chassis-mounted cranes combining transport and lifting in one trip. Capacities of 10T to 100T make these the agile choice for logistics, construction, and infrastructure tasks across urban sites.",
-    capMin:10, capMax:100, capDefault:40, capUnit:"t",
+    capMin:10, capMax:100, capDefault:40, capUnit:"t", capLabel:"Rated capacity at radius",
     reachLabel:"Working radius", reachMin:3, reachMax:25, reachDefault:8, reachUnit:"m",
     boomLabel:"Boom length", boomMin:15, boomMax:40
   },
@@ -251,19 +252,32 @@ const CRANES = [
     id:"tower", cat:"static", num:"05",
     name:"Tower Crane", model:"Jaso J180LPA / LUFFING JIB CLASS",
     desc:"Fixed vertical-reach cranes for long-duration builds. TWC's Jaso J180LPA units rate up to 12T, with luffing jib lengths from 30m to 50m for confined city sites where swing radius is restricted.",
-    capMin:2, capMax:12, capDefault:6, capUnit:"t",
+    capMin:2, capMax:12, capDefault:6, capUnit:"t", capLabel:"Rated capacity at radius",
     reachLabel:"Jib radius", reachMin:15, reachMax:50, reachDefault:25, reachUnit:"m",
     boomLabel:"Jib length", boomMin:30, boomMax:50
+  },
+  {
+    id:"spmt", cat:"transport", num:"06",
+    name:"Self-Propelled Modular Trailer", model:"SPMT / MODULAR TRANSPORT CLASS",
+    desc:"Computer-controlled modular trailers that carry rather than lift oversized loads on a flat deck. Individual axle lines couple side-by-side or end-to-end, moving hundreds to thousands of tonnes with fully independent hydraulic steering.",
+    capMin:200, capMax:2400, capDefault:800, capUnit:"t", capLabel:"Total payload capacity",
+    reachLabel:"Axle lines", reachMin:6, reachMax:60, reachDefault:20, reachUnit:"lines",
+    boomLabel:"Deck length", boomMin:10, boomMax:60
   }
 ];
 
 const catMeta = {
   tracked:{label:"Tracked", dot:"var(--ink)"},
   wheeled:{label:"Wheeled", dot:"var(--cyan)"},
-  static:{label:"Static", dot:"var(--rust)"}
+  static:{label:"Static", dot:"var(--rust)"},
+  transport:{label:"Transport", dot:"var(--steel)"}
 };
 
 function ratedCapacity(c, radius){
+  if (c.id === "spmt") {
+    // total payload scales with coupled axle lines, ~40t rated load per line
+    return Math.min(c.capMax, Math.max(c.capMin, Math.round(radius * 40)));
+  }
   // illustrative inverse relationship anchored to card's own capacity range
   const rMin = c.reachMin, rMax = c.reachMax;
   const t = (radius - rMin) / (rMax - rMin); // 0..1
@@ -275,18 +289,106 @@ function ratedCapacity(c, radius){
 function buildDiagramSVG(c, radiusVal, boomVal){
   const w = 340, h = 190;
   const groundY = h - 22;
-  const pivotX = 60, pivotY = groundY - (c.id === "tower" ? 70 : 30);
-
   const rNorm = (radiusVal - c.reachMin) / (c.reachMax - c.reachMin);
+  const bNorm = (boomVal - c.boomMin) / (c.boomMax - c.boomMin);
+
+  if (c.id === "spmt") {
+    // flat modular deck on wheel bogies — carries loads, doesn't lift them, so no boom/hook at all
+    const deckY = groundY - 34;
+    const deckH = 10;
+    const deckX1 = 30;
+    const lenNorm = (boomVal - c.boomMin) / (c.boomMax - c.boomMin);
+    const deckX2 = deckX1 + 140 + lenNorm * 140;
+    const bogieCount = Math.max(3, Math.min(9, Math.round(3 + rNorm * 6)));
+    const spacing = (deckX2 - deckX1) / (bogieCount + 1);
+
+    let bogies = "";
+    for (let i = 1; i <= bogieCount; i++) {
+      const bx = deckX1 + spacing * i;
+      bogies += `<rect x="${bx-7}" y="${deckY+deckH}" width="14" height="6" fill="none" stroke="#8C8570" stroke-width="1"/>`;
+      bogies += `<circle cx="${bx-4}" cy="${groundY}" r="4" fill="none" stroke="#B9B4A6" stroke-width="1.2"/>`;
+      bogies += `<circle cx="${bx+4}" cy="${groundY}" r="4" fill="none" stroke="#B9B4A6" stroke-width="1.2"/>`;
+    }
+
+    const loadW = (deckX2 - deckX1) * 0.55;
+    const loadX = deckX1 + (deckX2 - deckX1 - loadW) / 2;
+
+    return `
+    <svg viewBox="0 0 ${w} ${h}" width="100%" height="150" xmlns="http://www.w3.org/2000/svg">
+      <line x1="10" y1="${groundY}" x2="${w-10}" y2="${groundY}" stroke="rgba(255,212,0,0.30)" stroke-width="1"/>
+      <rect x="${deckX1}" y="${deckY}" width="${deckX2-deckX1}" height="${deckH}" fill="none" stroke="#FFD400" stroke-width="2"/>
+      ${bogies}
+      <rect x="${loadX}" y="${deckY-26}" width="${loadW}" height="26" fill="none" stroke="#6FD8E3" stroke-width="1.4" stroke-dasharray="3 3"/>
+      <text x="${(deckX1+deckX2)/2}" y="${groundY+14}" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#B9B4A6">${radiusVal} AXLE LINES</text>
+    </svg>`;
+  }
+
+  if (c.id === "tower") {
+    // fixed vertical mast; jib + counter-jib pivot from the TOP of the mast, not the base
+    const pivotX = 92;
+    const mastTopY = 18;
+    const angleDeg = 55 - rNorm * 45; // steep near mast (short radius) -> near-horizontal (long radius)
+    const angleRad = angleDeg * Math.PI / 180;
+    const jibPx = 70 + bNorm * 170;
+    const tipX = pivotX + Math.cos(angleRad) * jibPx;
+    const tipY = mastTopY - Math.sin(angleRad) * jibPx;
+    const hookY = groundY - 6;
+    const counterX = pivotX - 32;
+    const counterY = mastTopY + 12;
+
+    return `
+    <svg viewBox="0 0 ${w} ${h}" width="100%" height="150" xmlns="http://www.w3.org/2000/svg">
+      <line x1="10" y1="${groundY}" x2="${w-10}" y2="${groundY}" stroke="rgba(255,212,0,0.30)" stroke-width="1"/>
+      <rect x="${pivotX-5}" y="${mastTopY}" width="10" height="${groundY-mastTopY}" fill="none" stroke="#8C8570" stroke-width="1.2"/>
+      <line x1="${pivotX}" y1="${mastTopY}" x2="${counterX}" y2="${counterY}" stroke="#B9B4A6" stroke-width="1.6" stroke-linecap="round"/>
+      <rect x="${counterX-6}" y="${counterY-4}" width="12" height="8" fill="#B9B4A6"/>
+      <line x1="${pivotX}" y1="${mastTopY}" x2="${tipX}" y2="${tipY}" stroke="#FFD400" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="${tipX}" y1="${tipY}" x2="${tipX}" y2="${hookY}" stroke="#B9B4A6" stroke-width="1" stroke-dasharray="2 2"/>
+      <rect x="${tipX-6}" y="${hookY-6}" width="12" height="12" fill="none" stroke="#6FD8E3" stroke-width="1.4"/>
+      <circle cx="${pivotX}" cy="${mastTopY}" r="3" fill="#FFD400"/>
+      <line x1="${pivotX}" y1="${groundY}" x2="${tipX}" y2="${groundY}" stroke="rgba(255,212,0,0.35)" stroke-width="1" stroke-dasharray="3 3"/>
+      <text x="${(pivotX+tipX)/2}" y="${groundY+14}" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#B9B4A6">R = ${radiusVal}m</text>
+    </svg>`;
+  }
+
+  if (c.id === "lorry") {
+    // small crane bolted onto a flatbed truck — wheels + cab + low-mounted pedestal, not a dedicated crane carrier
+    const groundYL = groundY;
+    const bedY = groundYL - 20;
+    const bedX1 = 24, bedX2 = 168;
+    const pivotX = 60, pivotY = bedY - 4;
+    const angleDeg = 68 - rNorm * 46;
+    const angleRad = angleDeg * Math.PI / 180;
+    const boomPx = 60 + bNorm * 90;
+    const tipX = pivotX + Math.cos(angleRad) * boomPx;
+    const tipY = pivotY - Math.sin(angleRad) * boomPx;
+    const hookY = groundYL - 6;
+
+    return `
+    <svg viewBox="0 0 ${w} ${h}" width="100%" height="150" xmlns="http://www.w3.org/2000/svg">
+      <line x1="10" y1="${groundYL}" x2="${w-10}" y2="${groundYL}" stroke="rgba(255,212,0,0.30)" stroke-width="1"/>
+      <rect x="${bedX1}" y="${bedY}" width="${bedX2-bedX1}" height="14" fill="none" stroke="#8C8570" stroke-width="1.2" rx="1"/>
+      <rect x="${bedX2}" y="${bedY-18}" width="30" height="32" fill="none" stroke="#8C8570" stroke-width="1.2" rx="1"/>
+      <circle cx="${bedX1+22}" cy="${groundYL}" r="8" fill="none" stroke="#B9B4A6" stroke-width="1.4"/>
+      <circle cx="${bedX2-18}" cy="${groundYL}" r="8" fill="none" stroke="#B9B4A6" stroke-width="1.4"/>
+      <circle cx="${bedX2+16}" cy="${groundYL}" r="8" fill="none" stroke="#B9B4A6" stroke-width="1.4"/>
+      <rect x="${pivotX-8}" y="${pivotY-2}" width="16" height="6" fill="#8C8570"/>
+      <line x1="${pivotX}" y1="${pivotY}" x2="${tipX}" y2="${tipY}" stroke="#FFD400" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="${tipX}" y1="${tipY}" x2="${tipX}" y2="${hookY}" stroke="#B9B4A6" stroke-width="1" stroke-dasharray="2 2"/>
+      <rect x="${tipX-6}" y="${hookY-6}" width="12" height="12" fill="none" stroke="#6FD8E3" stroke-width="1.4"/>
+      <circle cx="${pivotX}" cy="${pivotY}" r="3" fill="#FFD400"/>
+      <line x1="${pivotX}" y1="${groundYL}" x2="${tipX}" y2="${groundYL}" stroke="rgba(255,212,0,0.35)" stroke-width="1" stroke-dasharray="3 3"/>
+      <text x="${(pivotX+tipX)/2}" y="${groundYL+14}" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#B9B4A6">R = ${radiusVal}m</text>
+    </svg>`;
+  }
+
+  // crawler / hydraulic / rough terrain: telescopic boom pivots from a low carrier base
+  const pivotX = 60, pivotY = groundY - 30;
   const angleDeg = 68 - rNorm * 46; // 68deg (short radius) -> 22deg (long radius)
   const angleRad = angleDeg * Math.PI / 180;
-
-  const bNorm = (boomVal - c.boomMin) / (c.boomMax - c.boomMin);
   const boomPx = 90 + bNorm * 130;
-
   const tipX = pivotX + Math.cos(angleRad) * boomPx;
   const tipY = pivotY - Math.sin(angleRad) * boomPx;
-
   const hookY = groundY - 6;
 
   return `
@@ -332,7 +434,7 @@ CRANES.forEach(c => {
     <div class="controls">
       <div class="readout">
         <div>
-          <div class="label">Rated capacity at radius</div>
+          <div class="label">${c.capLabel}</div>
           <div class="value" id="cap-${c.id}">${c.capDefault}<span class="unit">${c.capUnit}</span></div>
         </div>
       </div>
@@ -340,7 +442,7 @@ CRANES.forEach(c => {
       <div class="slider-block">
         <div class="top-row"><span>${c.reachLabel}</span><b id="reachVal-${c.id}">${c.reachDefault} ${c.reachUnit}</b></div>
         <input type="range" id="reach-${c.id}" min="${c.reachMin}" max="${c.reachMax}" value="${c.reachDefault}" step="1">
-        <div class="minmax"><span>${c.reachMin}${c.reachUnit}</span><span>${c.reachMax}${c.reachUnit}</span></div>
+        <div class="minmax"><span>${c.reachMin} ${c.reachUnit}</span><span>${c.reachMax} ${c.reachUnit}</span></div>
       </div>
 
       <div class="slider-block">
@@ -349,7 +451,7 @@ CRANES.forEach(c => {
         <div class="minmax"><span>${c.boomMin}m</span><span>${c.boomMax}m</span></div>
       </div>
 
-      <div class="note">Illustrative rating — for reference only, not a certified load chart</div>
+      <div class="note">Illustrative rating — for reference only, not a certified load or payload chart</div>
     </div>
   </div>`);
 });
