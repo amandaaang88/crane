@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TWC Fleet Configurator — Crane Index</title>
+<title>TWC Fleet Configurator — Crawler, Hydraulic, RT, Lorry & Tower Cranes</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
@@ -17,6 +17,7 @@
   --line-strong:rgba(27,27,27,0.30);
   --diagram-bg:#1B1B1B;
   --cyan:#1F6E7A;
+  --rust:#8B3A2B;
   --radius-s:2px;
   --radius-m:3px;
 }
@@ -94,9 +95,7 @@ h1.title span{color:var(--muted); font-weight:500;}
   border-radius:20px; white-space:nowrap; transition:all .15s ease; display:flex; align-items:center; gap:7px;
 }
 .index-nav a:hover, .index-nav a:focus-visible{color:var(--ink); border-color:var(--ink); background:rgba(27,27,27,0.06);}
-.index-nav a .dot{width:6px; height:6px; border-radius:50%; background:var(--cyan);}
-.index-nav a[data-cat="marine"] .dot{background:var(--cyan);}
-.index-nav a[data-cat="land"] .dot{background:var(--ink);}
+.index-nav a .dot{width:6px; height:6px; border-radius:50%;}
 
 section.section-head{margin:0 0 26px;}
 .section-head .num{font-family:'JetBrains Mono',monospace; color:var(--muted-2); font-size:12px;}
@@ -179,7 +178,7 @@ footer .f-r{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--
   <div class="hero">
     <div class="eyebrow">TWC — Fleet Reference</div>
     <h1 class="title">Crane Fleet<br><span>Configurator</span></h1>
-    <p class="subtitle">An interactive index of TWC's lifting fleet. Adjust radius and reach on each unit to see how rated capacity responds — the same trade-off crews read off a load chart on site. Photo placeholders are marked for site and yard photography.</p>
+    <p class="subtitle">An interactive index of TWC's crane fleet — crawler, hydraulic, rough terrain, lorry-mounted and tower — drawn from the actual equipment classes TWC operates. Adjust radius and reach on each unit to see how rated capacity responds, the same trade-off crews read off a load chart on site. Photo placeholders are marked for site and yard photography.</p>
 
     <div class="hero-grid">
       <div class="photo-slot hero-photo">
@@ -190,10 +189,10 @@ footer .f-r{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--
         <div class="dim">suggested 16:9 · landscape · on-site</div>
       </div>
       <div class="hero-stats">
-        <div class="hero-stat"><span class="k">Fleet units indexed</span><span class="v">05</span></div>
-        <div class="hero-stat"><span class="k">Max rated capacity</span><span class="v">3,000<span class="unit">t</span></span></div>
-        <div class="hero-stat"><span class="k">Operating markets</span><span class="v">SG · MY · PNG</span></div>
-        <div class="hero-stat"><span class="k">Service class</span><span class="v">Heavy Lift</span></div>
+        <div class="hero-stat"><span class="k">Crane classes indexed</span><span class="v">05</span></div>
+        <div class="hero-stat"><span class="k">Fleet size (all cranes)</span><span class="v">579</span></div>
+        <div class="hero-stat"><span class="k">Max rated capacity</span><span class="v">2,200<span class="unit">t</span></span></div>
+        <div class="hero-stat"><span class="k">Operating since</span><span class="v">1978</span></div>
       </div>
     </div>
   </div>
@@ -202,7 +201,7 @@ footer .f-r{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--
 
   <div class="section-head">
     <div class="num">INDEX / 01–05</div>
-    <h2>Fleet by type</h2>
+    <h2>Fleet by class</h2>
   </div>
 
   <div class="fleet" id="fleet"></div>
@@ -217,50 +216,51 @@ footer .f-r{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--
 <script>
 const CRANES = [
   {
-    id:"crawler", cat:"land", num:"01",
-    name:"Crawler Crane", model:"TWC-CR / TRACKED CLASS",
-    desc:"Tracked heavy-lift crane for congested yards and soft ground. Self-erecting boom, high capacity at short radius, used on the majority of TWC's plant-relocation and module lifts.",
-    capMin:50, capMax:800, capDefault:400, capUnit:"t",
-    reachLabel:"Working radius", reachMin:8, reachMax:40, reachDefault:16, reachUnit:"m",
-    boomLabel:"Boom length", boomMin:30, boomMax:90
+    id:"crawler", cat:"tracked", num:"01",
+    name:"Crawler Crane", model:"incl. SANY SCC38000TM / CRAWLER CLASS",
+    desc:"Tracked heavy-lift cranes built on a rugged crawler undercarriage, traversing soft soils and uneven ground with ease. Capacities span 50T to 2,200T, TWC's highest-tonnage unit, for towering builds and major infrastructure lifts.",
+    capMin:50, capMax:2200, capDefault:800, capUnit:"t",
+    reachLabel:"Working radius", reachMin:8, reachMax:60, reachDefault:20, reachUnit:"m",
+    boomLabel:"Boom length", boomMin:30, boomMax:100
   },
   {
-    id:"allterrain", cat:"land", num:"02",
-    name:"All-Terrain Mobile Crane", model:"TWC-AT / ROAD-LEGAL CLASS",
-    desc:"Road-legal mobile crane for fast mobilisation between sites. Telescopic boom trades peak capacity for reach and set-up speed, ideal for shorter-duration lifts.",
-    capMin:25, capMax:500, capDefault:220, capUnit:"t",
-    reachLabel:"Working radius", reachMin:5, reachMax:36, reachDefault:12, reachUnit:"m",
+    id:"hydraulic", cat:"wheeled", num:"02",
+    name:"Hydraulic / Mobile Crane", model:"incl. Grove GMK6300L / ALL-TERRAIN CLASS",
+    desc:"Road-legal cranes that move fast between sites, from urban streets to remote yards. TWC's mobile lineup runs 50T to 900T, with all-wheel steer models like the GMK6300L offering an 80m main boom.",
+    capMin:50, capMax:900, capDefault:300, capUnit:"t",
+    reachLabel:"Working radius", reachMin:5, reachMax:40, reachDefault:14, reachUnit:"m",
     boomLabel:"Boom length", boomMin:30, boomMax:80
   },
   {
-    id:"tower", cat:"land", num:"03",
-    name:"Tower Crane", model:"TWC-TC / VERTICAL CLASS",
-    desc:"Fixed vertical-reach crane for long-duration builds. Capacity trails off sharply with jib length, so contracts are planned around the load chart's far-radius figures.",
-    capMin:4, capMax:20, capDefault:10, capUnit:"t",
-    reachLabel:"Jib radius", reachMin:15, reachMax:70, reachDefault:35, reachUnit:"m",
-    boomLabel:"Jib length", boomMin:30, boomMax:70
+    id:"roughterrain", cat:"wheeled", num:"03",
+    name:"Rough Terrain Crane", model:"incl. SANY SRC900T / RT CLASS",
+    desc:"Compact, rugged-tyred cranes for confined and off-road sites. TWC's rough terrain fleet covers 10T to 145T, with variable outrigger configurations for muddy, rocky, or uneven ground.",
+    capMin:10, capMax:145, capDefault:60, capUnit:"t",
+    reachLabel:"Working radius", reachMin:3, reachMax:35, reachDefault:10, reachUnit:"m",
+    boomLabel:"Boom length", boomMin:20, boomMax:65
   },
   {
-    id:"marine", cat:"marine", num:"04",
-    name:"Marine Sheerleg Crane", model:"TWC-MS / FLOATING CLASS",
-    desc:"Floating sheerleg for offshore module installs and quayside heavy lifts. Very high capacity at short radius, deployed with TWC's marine logistics division.",
-    capMin:200, capMax:3000, capDefault:1200, capUnit:"t",
-    reachLabel:"Working radius", reachMin:6, reachMax:30, reachDefault:12, reachUnit:"m",
-    boomLabel:"Boom length", boomMin:25, boomMax:55
+    id:"lorry", cat:"wheeled", num:"04",
+    name:"Lorry Crane", model:"TWC-LC / LORRY-MOUNTED CLASS",
+    desc:"Chassis-mounted cranes combining transport and lifting in one trip. Capacities of 10T to 100T make these the agile choice for logistics, construction, and infrastructure tasks across urban sites.",
+    capMin:10, capMax:100, capDefault:40, capUnit:"t",
+    reachLabel:"Working radius", reachMin:3, reachMax:25, reachDefault:8, reachUnit:"m",
+    boomLabel:"Boom length", boomMin:15, boomMax:40
   },
   {
-    id:"gantry", cat:"land", num:"05",
-    name:"Gantry / Strand Jack System", model:"TWC-GS / MODULAR CLASS",
-    desc:"Modular strand-jack gantry for super-heavy, low-speed transport and skidding operations where conventional boom geometry doesn't apply.",
-    capMin:100, capMax:2000, capDefault:600, capUnit:"t",
-    reachLabel:"Span", reachMin:10, reachMax:60, reachDefault:24, reachUnit:"m",
-    boomLabel:"Lift height", boomMin:10, boomMax:35
+    id:"tower", cat:"static", num:"05",
+    name:"Tower Crane", model:"Jaso J180LPA / LUFFING JIB CLASS",
+    desc:"Fixed vertical-reach cranes for long-duration builds. TWC's Jaso J180LPA units rate up to 12T, with luffing jib lengths from 30m to 50m for confined city sites where swing radius is restricted.",
+    capMin:2, capMax:12, capDefault:6, capUnit:"t",
+    reachLabel:"Jib radius", reachMin:15, reachMax:50, reachDefault:25, reachUnit:"m",
+    boomLabel:"Jib length", boomMin:30, boomMax:50
   }
 ];
 
 const catMeta = {
-  land:{label:"Land-based", dot:"var(--ink)"},
-  marine:{label:"Marine", dot:"var(--cyan)"}
+  tracked:{label:"Tracked", dot:"var(--ink)"},
+  wheeled:{label:"Wheeled", dot:"var(--cyan)"},
+  static:{label:"Static", dot:"var(--rust)"}
 };
 
 function ratedCapacity(c, radius){
@@ -275,7 +275,7 @@ function ratedCapacity(c, radius){
 function buildDiagramSVG(c, radiusVal, boomVal){
   const w = 340, h = 190;
   const groundY = h - 22;
-  const pivotX = 60, pivotY = groundY - (c.id === "gantry" ? 60 : 30);
+  const pivotX = 60, pivotY = groundY - (c.id === "tower" ? 70 : 30);
 
   const rNorm = (radiusVal - c.reachMin) / (c.reachMax - c.reachMin);
   const angleDeg = 68 - rNorm * 46; // 68deg (short radius) -> 22deg (long radius)
