@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TWC Fleet Configurator — Cranes & SPMTs</title>
+<title>TWC Fleet Configurator — Maintenance Index</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
@@ -15,10 +15,11 @@
   --muted-2:#8C8570;
   --line:rgba(27,27,27,0.14);
   --line-strong:rgba(27,27,27,0.30);
-  --diagram-bg:#1B1B1B;
   --cyan:#1F6E7A;
   --rust:#8B3A2B;
   --steel:#3D5A73;
+  --ok:#2F7D4F;
+  --warn:#B8860B;
   --radius-s:2px;
   --radius-m:3px;
 }
@@ -35,7 +36,6 @@ body{
   min-height:100vh;
 }
 
-/* faint blueprint grid */
 .grid-bg{
   position:fixed; inset:0; z-index:0; pointer-events:none;
   background-image:
@@ -61,7 +61,14 @@ h1.title{
   margin:18px 0 6px; color:var(--ink);
 }
 h1.title span{color:var(--muted); font-weight:500;}
-.subtitle{max-width:560px; color:var(--muted); font-size:15.5px; line-height:1.6; margin:14px 0 34px;}
+.subtitle{max-width:620px; color:var(--muted); font-size:15.5px; line-height:1.6; margin:14px 0 18px;}
+.dummy-flag{
+  display:inline-flex; align-items:center; gap:8px; font-family:'JetBrains Mono',monospace;
+  font-size:11px; letter-spacing:0.05em; text-transform:uppercase; color:var(--rust);
+  border:1px solid rgba(139,58,43,0.35); background:rgba(139,58,43,0.06);
+  padding:6px 12px; border-radius:20px; margin-bottom:28px;
+}
+.dummy-flag::before{content:"⚠"; font-size:12px;}
 
 .hero-grid{display:grid; grid-template-columns:1.3fr 1fr; gap:22px; margin-top:8px;}
 @media (max-width:860px){.hero-grid{grid-template-columns:1fr;}}
@@ -75,13 +82,14 @@ h1.title span{color:var(--muted); font-weight:500;}
 .photo-slot .cam{opacity:0.7;}
 .photo-slot .lbl{font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted);}
 .photo-slot .dim{font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted-2);}
-.hero-photo{min-height:280px;}
+.hero-photo{min-height:240px;}
 
 .hero-stats{display:flex; flex-direction:column; gap:0; border:1px solid var(--line); border-radius:var(--radius-m); overflow:hidden; background:var(--card);}
-.hero-stat{padding:18px 20px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:baseline;}
+.hero-stat{padding:16px 20px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:baseline;}
 .hero-stat:last-child{border-bottom:none;}
 .hero-stat .k{font-family:'JetBrains Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted);}
 .hero-stat .v{font-family:'JetBrains Mono',monospace; font-size:20px; color:var(--ink); font-weight:700;}
+.hero-stat .v.flagged{color:var(--rust);}
 
 /* ---------- INDEX NAV ---------- */
 .index-nav{
@@ -97,6 +105,9 @@ h1.title span{color:var(--muted); font-weight:500;}
 }
 .index-nav a:hover, .index-nav a:focus-visible{color:var(--ink); border-color:var(--ink); background:rgba(27,27,27,0.06);}
 .index-nav a .dot{width:6px; height:6px; border-radius:50%;}
+.index-nav a .flag-count{
+  font-weight:700; color:var(--rust); background:rgba(139,58,43,0.12); padding:1px 6px; border-radius:20px; font-size:10px;
+}
 
 section.section-head{margin:0 0 26px;}
 .section-head .num{font-family:'JetBrains Mono',monospace; color:var(--muted-2); font-size:12px;}
@@ -109,7 +120,7 @@ section.section-head{margin:0 0 26px;}
   border:1px solid var(--line); border-radius:var(--radius-m);
   background:var(--card);
   box-shadow:0 3px 18px rgba(27,27,27,0.10);
-  padding:26px; display:grid; grid-template-columns:1fr 1fr 1.1fr; gap:28px;
+  padding:26px; display:grid; grid-template-columns:0.85fr 1fr 1.35fr; gap:28px;
 }
 @media (max-width:980px){.card{grid-template-columns:1fr;}}
 
@@ -125,10 +136,11 @@ section.section-head{margin:0 0 26px;}
 .cat-tag .dot{width:6px; height:6px; border-radius:50%;}
 .card-info h3{font-family:'Oswald',sans-serif; text-transform:uppercase; font-size:24px; margin:0 0 4px; letter-spacing:0.01em; color:var(--ink);}
 .card-info .model{font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted); margin-bottom:14px;}
-.card-info p.desc{font-size:14px; line-height:1.65; color:var(--muted); margin:0 0 18px;}
-.diagram{border:1px solid #333; border-radius:var(--radius-s); background:var(--diagram-bg); padding:8px;}
+.card-info p.desc{font-size:14px; line-height:1.65; color:var(--muted); margin:0 0 12px;}
+.card-info .interval-note{font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--muted-2); border-top:1px solid var(--line); padding-top:12px;}
 
-.controls{display:flex; flex-direction:column; gap:20px;}
+/* ---------- MAINTENANCE PANEL ---------- */
+.maint-panel{display:flex; flex-direction:column; gap:16px;}
 .readout{
   display:flex; justify-content:space-between; align-items:flex-end;
   border-bottom:1px solid var(--line); padding-bottom:14px;
@@ -138,7 +150,8 @@ section.section-head{margin:0 0 26px;}
   font-family:'JetBrains Mono',monospace; font-size:26px; font-weight:700; color:var(--ink); line-height:1;
   background:var(--bg); padding:6px 16px; border-radius:999px; display:inline-block;
 }
-.readout .unit{font-size:13px; color:var(--ink); opacity:0.7; font-weight:400; margin-left:3px;}
+.readout .value.clear{background:rgba(47,125,79,0.14); color:var(--ok);}
+.readout .unit{font-size:13px; opacity:0.7; font-weight:400; margin-left:3px;}
 
 .slider-block{display:flex; flex-direction:column; gap:8px;}
 .slider-block .top-row{display:flex; justify-content:space-between; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted);}
@@ -159,6 +172,21 @@ input[type="range"]::-moz-range-thumb{
 }
 .minmax{display:flex; justify-content:space-between; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted-2);}
 
+.unit-list{display:flex; flex-direction:column; gap:10px;}
+.unit-row{border:1px solid var(--line); border-radius:var(--radius-s); padding:10px 12px; transition:border-color .15s ease;}
+.unit-row.status-overdue{border-color:rgba(139,58,43,0.4);}
+.unit-row.status-due{border-color:rgba(184,134,11,0.4);}
+.u-top{display:flex; align-items:center; gap:8px; font-family:'JetBrains Mono',monospace;}
+.u-id{font-size:11.5px; font-weight:700; color:var(--ink); white-space:nowrap;}
+.u-model{font-size:10px; color:var(--muted); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.badge{font-size:9px; text-transform:uppercase; letter-spacing:0.06em; padding:3px 8px; border-radius:20px; font-weight:700; white-space:nowrap;}
+.badge.ok{background:rgba(47,125,79,0.12); color:var(--ok);}
+.badge.due{background:rgba(184,134,11,0.14); color:var(--warn);}
+.badge.overdue{background:rgba(139,58,43,0.14); color:var(--rust);}
+.u-bar{height:5px; border-radius:3px; background:var(--line-strong); overflow:hidden; margin-top:8px;}
+.u-bar-fill{height:100%; border-radius:3px;}
+.u-meta{font-family:'JetBrains Mono',monospace; font-size:9.5px; color:var(--muted-2); margin-top:6px; display:flex; justify-content:space-between;}
+
 .note{font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted-2); margin-top:2px;}
 
 /* ---------- FOOTER ---------- */
@@ -178,27 +206,28 @@ footer .f-r{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--
 
   <div class="hero">
     <div class="eyebrow">TWC — Fleet Reference</div>
-    <h1 class="title">Crane Fleet<br><span>Configurator</span></h1>
-    <p class="subtitle">An interactive index of TWC's heavy lift and haulage fleet — crawler, hydraulic, rough terrain, lorry-mounted and tower cranes, plus self-propelled modular trailers — drawn from the actual equipment classes TWC operates. Adjust the sliders on each unit to see how rated capacity responds, the same trade-off crews read off a load chart or axle-line count on site. Photo placeholders are marked for site and yard photography.</p>
+    <h1 class="title">Fleet Maintenance<br><span>Index</span></h1>
+    <p class="subtitle">An index of TWC's equipment classes with sample per-unit service records. Drag the forecast slider on each class to see which units move into service-due or overdue status over the coming weeks — the same lead time a maintenance planner needs to schedule downtime before a breakdown does.</p>
+    <div class="dummy-flag">Sample data — not live fleet records</div>
 
     <div class="hero-grid">
       <div class="photo-slot hero-photo">
         <div class="cam">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.4"/></svg>
         </div>
-        <div class="lbl">Hero photograph — flagship lift in progress</div>
+        <div class="lbl">Hero photograph — workshop or yard maintenance</div>
         <div class="dim">suggested 16:9 · landscape · on-site</div>
       </div>
       <div class="hero-stats">
         <div class="hero-stat"><span class="k">Equipment classes indexed</span><span class="v">06</span></div>
-        <div class="hero-stat"><span class="k">Fleet size (all cranes)</span><span class="v">579</span></div>
-        <div class="hero-stat"><span class="k">Max rated capacity</span><span class="v">2,200<span class="unit">t</span></span></div>
-        <div class="hero-stat"><span class="k">Operating since</span><span class="v">1978</span></div>
+        <div class="hero-stat"><span class="k">Sample units tracked</span><span class="v" id="totalUnits">—</span></div>
+        <div class="hero-stat"><span class="k">Flagged right now</span><span class="v flagged" id="totalFlagged">—</span></div>
+        <div class="hero-stat"><span class="k">Data basis</span><span class="v">Illustrative</span></div>
       </div>
     </div>
   </div>
 
-  <nav class="index-nav" id="indexNav" aria-label="Crane type index"></nav>
+  <nav class="index-nav" id="indexNav" aria-label="Equipment class index"></nav>
 
   <div class="section-head">
     <div class="num">INDEX / 01–06</div>
@@ -208,61 +237,79 @@ footer .f-r{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--
   <div class="fleet" id="fleet"></div>
 
   <footer>
-    <div class="f-l">TWC FLEET CONFIGURATOR — INTERNAL MARKETING TOOL</div>
-    <div class="f-r">Capacities shown are illustrative load-chart approximations, not certified ratings</div>
+    <div class="f-l">TWC FLEET MAINTENANCE INDEX — INTERNAL PLANNING TOOL</div>
+    <div class="f-r">All unit IDs, service dates and breakdown counts are dummy data for demonstration only</div>
   </footer>
 
 </div>
 
 <script>
-const CRANES = [
+const CLASSES = [
   {
     id:"crawler", cat:"tracked", num:"01",
     name:"Crawler Crane", model:"incl. SANY SCC38000TM / CRAWLER CLASS",
-    desc:"Tracked heavy-lift cranes built on a rugged crawler undercarriage, traversing soft soils and uneven ground with ease. Capacities span 50T to 2,200T, TWC's highest-tonnage unit, for towering builds and major infrastructure lifts.",
-    capMin:50, capMax:2200, capDefault:800, capUnit:"t", capLabel:"Rated capacity at radius",
-    reachLabel:"Working radius", reachMin:8, reachMax:60, reachDefault:20, reachUnit:"m",
-    boomLabel:"Boom length", boomMin:30, boomMax:100
+    desc:"Tracked heavy-lift cranes on a rugged crawler undercarriage. TWC's crawler fleet spans 50T to 2,200T.",
+    intervalDays:120,
+    units:[
+      {id:"CR-01", model:"SANY SCC38000TM", daysSince:40, breakdowns:1},
+      {id:"CR-02", model:"Demag CC2800-1", daysSince:98, breakdowns:3},
+      {id:"CR-03", model:"Kobelco CKE2500", daysSince:131, breakdowns:4}
+    ]
   },
   {
     id:"hydraulic", cat:"wheeled", num:"02",
     name:"Hydraulic / Mobile Crane", model:"incl. Grove GMK6300L / ALL-TERRAIN CLASS",
-    desc:"Road-legal cranes that move fast between sites, from urban streets to remote yards. TWC's mobile lineup runs 50T to 900T, with all-wheel steer models like the GMK6300L offering an 80m main boom.",
-    capMin:50, capMax:900, capDefault:300, capUnit:"t", capLabel:"Rated capacity at radius",
-    reachLabel:"Working radius", reachMin:5, reachMax:40, reachDefault:14, reachUnit:"m",
-    boomLabel:"Boom length", boomMin:30, boomMax:80
+    desc:"Road-legal cranes that mobilise fast between sites. TWC's mobile lineup runs 50T to 900T.",
+    intervalDays:90,
+    units:[
+      {id:"AT-01", model:"Grove GMK6300L", daysSince:22, breakdowns:0},
+      {id:"AT-02", model:"Grove GMK5095", daysSince:71, breakdowns:2},
+      {id:"AT-03", model:"Grove GMK3055", daysSince:95, breakdowns:5}
+    ]
   },
   {
     id:"roughterrain", cat:"wheeled", num:"03",
     name:"Rough Terrain Crane", model:"incl. SANY SRC900T / RT CLASS",
-    desc:"Compact, rugged-tyred cranes for confined and off-road sites. TWC's rough terrain fleet covers 10T to 145T, with variable outrigger configurations for muddy, rocky, or uneven ground.",
-    capMin:10, capMax:145, capDefault:60, capUnit:"t", capLabel:"Rated capacity at radius",
-    reachLabel:"Working radius", reachMin:3, reachMax:35, reachDefault:10, reachUnit:"m",
-    boomLabel:"Boom length", boomMin:20, boomMax:65
+    desc:"Compact, rugged-tyred cranes for confined and off-road sites. TWC's RT fleet covers 10T to 145T.",
+    intervalDays:90,
+    units:[
+      {id:"RT-01", model:"Grove RT760E", daysSince:15, breakdowns:0},
+      {id:"RT-02", model:"Grove RT890E", daysSince:68, breakdowns:1},
+      {id:"RT-03", model:"SANY SRC900T", daysSince:90, breakdowns:3}
+    ]
   },
   {
     id:"lorry", cat:"wheeled", num:"04",
     name:"Lorry Crane", model:"TWC-LC / LORRY-MOUNTED CLASS",
-    desc:"Chassis-mounted cranes combining transport and lifting in one trip. Capacities of 10T to 100T make these the agile choice for logistics, construction, and infrastructure tasks across urban sites.",
-    capMin:10, capMax:100, capDefault:40, capUnit:"t", capLabel:"Rated capacity at radius",
-    reachLabel:"Working radius", reachMin:3, reachMax:25, reachDefault:8, reachUnit:"m",
-    boomLabel:"Boom length", boomMin:15, boomMax:40
+    desc:"Chassis-mounted cranes combining transport and lifting in one trip. Capacities of 10T to 100T.",
+    intervalDays:60,
+    units:[
+      {id:"LC-01", model:"TWC-LC10", daysSince:12, breakdowns:0},
+      {id:"LC-02", model:"TWC-LC25", daysSince:48, breakdowns:2},
+      {id:"LC-03", model:"TWC-LC50", daysSince:66, breakdowns:4}
+    ]
   },
   {
     id:"tower", cat:"static", num:"05",
     name:"Tower Crane", model:"Jaso J180LPA / LUFFING JIB CLASS",
-    desc:"Fixed vertical-reach cranes for long-duration builds. TWC's Jaso J180LPA units rate up to 12T, with luffing jib lengths from 30m to 50m for confined city sites where swing radius is restricted.",
-    capMin:2, capMax:12, capDefault:6, capUnit:"t", capLabel:"Rated capacity at radius",
-    reachLabel:"Jib radius", reachMin:15, reachMax:50, reachDefault:25, reachUnit:"m",
-    boomLabel:"Jib length", boomMin:30, boomMax:50
+    desc:"Fixed vertical-reach cranes for long-duration builds. TWC's Jaso J180LPA units rate up to 12T.",
+    intervalDays:180,
+    units:[
+      {id:"TC-01", model:"Jaso J180LPA-1", daysSince:55, breakdowns:0},
+      {id:"TC-02", model:"Jaso J180LPA-2", daysSince:150, breakdowns:1},
+      {id:"TC-03", model:"Jaso J180LPA-3", daysSince:190, breakdowns:2}
+    ]
   },
   {
     id:"spmt", cat:"transport", num:"06",
     name:"Self-Propelled Modular Trailer", model:"SPMT / MODULAR TRANSPORT CLASS",
-    desc:"Computer-controlled modular trailers that carry rather than lift oversized loads on a flat deck. Individual axle lines couple side-by-side or end-to-end, moving hundreds to thousands of tonnes with fully independent hydraulic steering.",
-    capMin:200, capMax:2400, capDefault:800, capUnit:"t", capLabel:"Total payload capacity",
-    reachLabel:"Axle lines", reachMin:6, reachMax:60, reachDefault:20, reachUnit:"lines",
-    boomLabel:"Deck length", boomMin:10, boomMax:60
+    desc:"Computer-controlled modular trailers that carry oversized loads on a flat deck across coupled axle lines.",
+    intervalDays:45,
+    units:[
+      {id:"SP-01", model:"6-Line Module", daysSince:10, breakdowns:0},
+      {id:"SP-02", model:"12-Line Module", daysSince:36, breakdowns:1},
+      {id:"SP-03", model:"24-Line Module", daysSince:50, breakdowns:3}
+    ]
   }
 ];
 
@@ -273,145 +320,46 @@ const catMeta = {
   transport:{label:"Transport", dot:"var(--steel)"}
 };
 
-function ratedCapacity(c, radius){
-  if (c.id === "spmt") {
-    // total payload scales with coupled axle lines, ~40t rated load per line
-    return Math.min(c.capMax, Math.max(c.capMin, Math.round(radius * 40)));
-  }
-  // illustrative inverse relationship anchored to card's own capacity range
-  const rMin = c.reachMin, rMax = c.reachMax;
-  const t = (radius - rMin) / (rMax - rMin); // 0..1
-  const factor = Math.pow(1 - t, 1.6); // capacity falls off as radius grows
-  const cap = c.capMin + (c.capMax - c.capMin) * factor;
-  return Math.max(c.capMin, Math.round(cap));
+function statusFor(pct){
+  if (pct >= 100) return "overdue";
+  if (pct >= 75) return "due";
+  return "ok";
 }
 
-function buildDiagramSVG(c, radiusVal, boomVal){
-  const w = 340, h = 190;
-  const groundY = h - 22;
-  const rNorm = (radiusVal - c.reachMin) / (c.reachMax - c.reachMin);
-  const bNorm = (boomVal - c.boomMin) / (c.boomMax - c.boomMin);
+function statusLabel(status, daysOver){
+  if (status === "overdue") return `Overdue ${daysOver}d`;
+  if (status === "due") return "Due soon";
+  return "OK";
+}
 
-  if (c.id === "spmt") {
-    // flat modular deck on wheel bogies — carries loads, doesn't lift them, so no boom/hook at all
-    const deckY = groundY - 34;
-    const deckH = 10;
-    const deckX1 = 30;
-    const lenNorm = (boomVal - c.boomMin) / (c.boomMax - c.boomMin);
-    const deckX2 = deckX1 + 140 + lenNorm * 140;
-    const bogieCount = Math.max(3, Math.min(9, Math.round(3 + rNorm * 6)));
-    const spacing = (deckX2 - deckX1) / (bogieCount + 1);
-
-    let bogies = "";
-    for (let i = 1; i <= bogieCount; i++) {
-      const bx = deckX1 + spacing * i;
-      bogies += `<rect x="${bx-7}" y="${deckY+deckH}" width="14" height="6" fill="none" stroke="#8C8570" stroke-width="1"/>`;
-      bogies += `<circle cx="${bx-4}" cy="${groundY}" r="4" fill="none" stroke="#B9B4A6" stroke-width="1.2"/>`;
-      bogies += `<circle cx="${bx+4}" cy="${groundY}" r="4" fill="none" stroke="#B9B4A6" stroke-width="1.2"/>`;
-    }
-
-    const loadW = (deckX2 - deckX1) * 0.55;
-    const loadX = deckX1 + (deckX2 - deckX1 - loadW) / 2;
-
-    return `
-    <svg viewBox="0 0 ${w} ${h}" width="100%" height="150" xmlns="http://www.w3.org/2000/svg">
-      <line x1="10" y1="${groundY}" x2="${w-10}" y2="${groundY}" stroke="rgba(255,212,0,0.30)" stroke-width="1"/>
-      <rect x="${deckX1}" y="${deckY}" width="${deckX2-deckX1}" height="${deckH}" fill="none" stroke="#FFD400" stroke-width="2"/>
-      ${bogies}
-      <rect x="${loadX}" y="${deckY-26}" width="${loadW}" height="26" fill="none" stroke="#6FD8E3" stroke-width="1.4" stroke-dasharray="3 3"/>
-      <text x="${(deckX1+deckX2)/2}" y="${groundY+14}" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#B9B4A6">${radiusVal} AXLE LINES</text>
-    </svg>`;
-  }
-
-  if (c.id === "tower") {
-    // fixed vertical mast; jib + counter-jib pivot from the TOP of the mast, not the base
-    const pivotX = 92;
-    const mastTopY = 18;
-    const angleDeg = 55 - rNorm * 45; // steep near mast (short radius) -> near-horizontal (long radius)
-    const angleRad = angleDeg * Math.PI / 180;
-    const jibPx = 70 + bNorm * 170;
-    const tipX = pivotX + Math.cos(angleRad) * jibPx;
-    const tipY = mastTopY - Math.sin(angleRad) * jibPx;
-    const hookY = groundY - 6;
-    const counterX = pivotX - 32;
-    const counterY = mastTopY + 12;
-
-    return `
-    <svg viewBox="0 0 ${w} ${h}" width="100%" height="150" xmlns="http://www.w3.org/2000/svg">
-      <line x1="10" y1="${groundY}" x2="${w-10}" y2="${groundY}" stroke="rgba(255,212,0,0.30)" stroke-width="1"/>
-      <rect x="${pivotX-5}" y="${mastTopY}" width="10" height="${groundY-mastTopY}" fill="none" stroke="#8C8570" stroke-width="1.2"/>
-      <line x1="${pivotX}" y1="${mastTopY}" x2="${counterX}" y2="${counterY}" stroke="#B9B4A6" stroke-width="1.6" stroke-linecap="round"/>
-      <rect x="${counterX-6}" y="${counterY-4}" width="12" height="8" fill="#B9B4A6"/>
-      <line x1="${pivotX}" y1="${mastTopY}" x2="${tipX}" y2="${tipY}" stroke="#FFD400" stroke-width="2.2" stroke-linecap="round"/>
-      <line x1="${tipX}" y1="${tipY}" x2="${tipX}" y2="${hookY}" stroke="#B9B4A6" stroke-width="1" stroke-dasharray="2 2"/>
-      <rect x="${tipX-6}" y="${hookY-6}" width="12" height="12" fill="none" stroke="#6FD8E3" stroke-width="1.4"/>
-      <circle cx="${pivotX}" cy="${mastTopY}" r="3" fill="#FFD400"/>
-      <line x1="${pivotX}" y1="${groundY}" x2="${tipX}" y2="${groundY}" stroke="rgba(255,212,0,0.35)" stroke-width="1" stroke-dasharray="3 3"/>
-      <text x="${(pivotX+tipX)/2}" y="${groundY+14}" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#B9B4A6">R = ${radiusVal}m</text>
-    </svg>`;
-  }
-
-  if (c.id === "lorry") {
-    // small crane bolted onto a flatbed truck — wheels + cab + low-mounted pedestal, not a dedicated crane carrier
-    const groundYL = groundY;
-    const bedY = groundYL - 20;
-    const bedX1 = 24, bedX2 = 168;
-    const pivotX = 60, pivotY = bedY - 4;
-    const angleDeg = 68 - rNorm * 46;
-    const angleRad = angleDeg * Math.PI / 180;
-    const boomPx = 60 + bNorm * 90;
-    const tipX = pivotX + Math.cos(angleRad) * boomPx;
-    const tipY = pivotY - Math.sin(angleRad) * boomPx;
-    const hookY = groundYL - 6;
-
-    return `
-    <svg viewBox="0 0 ${w} ${h}" width="100%" height="150" xmlns="http://www.w3.org/2000/svg">
-      <line x1="10" y1="${groundYL}" x2="${w-10}" y2="${groundYL}" stroke="rgba(255,212,0,0.30)" stroke-width="1"/>
-      <rect x="${bedX1}" y="${bedY}" width="${bedX2-bedX1}" height="14" fill="none" stroke="#8C8570" stroke-width="1.2" rx="1"/>
-      <rect x="${bedX2}" y="${bedY-18}" width="30" height="32" fill="none" stroke="#8C8570" stroke-width="1.2" rx="1"/>
-      <circle cx="${bedX1+22}" cy="${groundYL}" r="8" fill="none" stroke="#B9B4A6" stroke-width="1.4"/>
-      <circle cx="${bedX2-18}" cy="${groundYL}" r="8" fill="none" stroke="#B9B4A6" stroke-width="1.4"/>
-      <circle cx="${bedX2+16}" cy="${groundYL}" r="8" fill="none" stroke="#B9B4A6" stroke-width="1.4"/>
-      <rect x="${pivotX-8}" y="${pivotY-2}" width="16" height="6" fill="#8C8570"/>
-      <line x1="${pivotX}" y1="${pivotY}" x2="${tipX}" y2="${tipY}" stroke="#FFD400" stroke-width="2.2" stroke-linecap="round"/>
-      <line x1="${tipX}" y1="${tipY}" x2="${tipX}" y2="${hookY}" stroke="#B9B4A6" stroke-width="1" stroke-dasharray="2 2"/>
-      <rect x="${tipX-6}" y="${hookY-6}" width="12" height="12" fill="none" stroke="#6FD8E3" stroke-width="1.4"/>
-      <circle cx="${pivotX}" cy="${pivotY}" r="3" fill="#FFD400"/>
-      <line x1="${pivotX}" y1="${groundYL}" x2="${tipX}" y2="${groundYL}" stroke="rgba(255,212,0,0.35)" stroke-width="1" stroke-dasharray="3 3"/>
-      <text x="${(pivotX+tipX)/2}" y="${groundYL+14}" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#B9B4A6">R = ${radiusVal}m</text>
-    </svg>`;
-  }
-
-  // crawler / hydraulic / rough terrain: telescopic boom pivots from a low carrier base
-  const pivotX = 60, pivotY = groundY - 30;
-  const angleDeg = 68 - rNorm * 46; // 68deg (short radius) -> 22deg (long radius)
-  const angleRad = angleDeg * Math.PI / 180;
-  const boomPx = 90 + bNorm * 130;
-  const tipX = pivotX + Math.cos(angleRad) * boomPx;
-  const tipY = pivotY - Math.sin(angleRad) * boomPx;
-  const hookY = groundY - 6;
-
-  return `
-  <svg viewBox="0 0 ${w} ${h}" width="100%" height="150" xmlns="http://www.w3.org/2000/svg">
-    <line x1="10" y1="${groundY}" x2="${w-10}" y2="${groundY}" stroke="rgba(255,212,0,0.30)" stroke-width="1"/>
-    <rect x="${pivotX-14}" y="${pivotY-6}" width="28" height="${groundY-(pivotY-6)}" fill="none" stroke="#8C8570" stroke-width="1.2" rx="1"/>
-    <line x1="${pivotX}" y1="${pivotY}" x2="${tipX}" y2="${tipY}" stroke="#FFD400" stroke-width="2.2" stroke-linecap="round"/>
-    <line x1="${tipX}" y1="${tipY}" x2="${tipX}" y2="${hookY}" stroke="#B9B4A6" stroke-width="1" stroke-dasharray="2 2"/>
-    <rect x="${tipX-6}" y="${hookY-6}" width="12" height="12" fill="none" stroke="#6FD8E3" stroke-width="1.4"/>
-    <circle cx="${pivotX}" cy="${pivotY}" r="3" fill="#FFD400"/>
-    <line x1="${pivotX}" y1="${groundY}" x2="${tipX}" y2="${groundY}" stroke="rgba(255,212,0,0.35)" stroke-width="1" stroke-dasharray="3 3"/>
-    <text x="${(pivotX+tipX)/2}" y="${groundY+14}" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#B9B4A6">R = ${radiusVal}m</text>
-  </svg>`;
+function barColor(status){
+  if (status === "overdue") return "var(--rust)";
+  if (status === "due") return "var(--warn)";
+  return "var(--ok)";
 }
 
 const fleetEl = document.getElementById("fleet");
 const navEl = document.getElementById("indexNav");
 
-CRANES.forEach(c => {
+CLASSES.forEach(c => {
   const meta = catMeta[c.cat];
 
   navEl.insertAdjacentHTML("beforeend",
-    `<a href="#${c.id}" data-cat="${c.cat}"><span class="dot"></span>${c.name}</a>`);
+    `<a href="#${c.id}" data-cat="${c.cat}"><span class="dot" style="background:${meta.dot}"></span>${c.name}<span class="flag-count" id="navflag-${c.id}">0</span></a>`);
+
+  const unitRows = c.units.map(u => `
+    <div class="unit-row" id="row-${c.id}-${u.id}">
+      <div class="u-top">
+        <span class="u-id">${u.id}</span>
+        <span class="u-model">${u.model}</span>
+        <span class="badge" id="badge-${c.id}-${u.id}"></span>
+      </div>
+      <div class="u-bar"><div class="u-bar-fill" id="bar-${c.id}-${u.id}"></div></div>
+      <div class="u-meta">
+        <span id="meta-${c.id}-${u.id}"></span>
+        <span>${u.breakdowns} breakdowns / 12mo</span>
+      </div>
+    </div>`).join("");
 
   fleetEl.insertAdjacentHTML("beforeend", `
   <div class="card" id="${c.id}">
@@ -421,7 +369,6 @@ CRANES.forEach(c => {
         <div class="lbl">Photo — ${c.name}</div>
         <div class="dim">suggested 4:3 · on site</div>
       </div>
-      <div class="diagram" id="diagram-${c.id}"></div>
     </div>
 
     <div class="card-info">
@@ -429,53 +376,84 @@ CRANES.forEach(c => {
       <h3>${c.name}</h3>
       <div class="model">${c.model}</div>
       <p class="desc">${c.desc}</p>
+      <div class="interval-note">Standard service interval: every ${c.intervalDays} days</div>
     </div>
 
-    <div class="controls">
+    <div class="maint-panel">
       <div class="readout">
         <div>
-          <div class="label">${c.capLabel}</div>
-          <div class="value" id="cap-${c.id}">${c.capDefault}<span class="unit">${c.capUnit}</span></div>
+          <div class="label">Assets needing attention</div>
+          <div class="value" id="alert-${c.id}">0<span class="unit">/${c.units.length}</span></div>
         </div>
       </div>
 
       <div class="slider-block">
-        <div class="top-row"><span>${c.reachLabel}</span><b id="reachVal-${c.id}">${c.reachDefault} ${c.reachUnit}</b></div>
-        <input type="range" id="reach-${c.id}" min="${c.reachMin}" max="${c.reachMax}" value="${c.reachDefault}" step="1">
-        <div class="minmax"><span>${c.reachMin} ${c.reachUnit}</span><span>${c.reachMax} ${c.reachUnit}</span></div>
+        <div class="top-row"><span>Forecast window</span><b id="forecastVal-${c.id}">+0 d</b></div>
+        <input type="range" id="forecast-${c.id}" min="0" max="90" value="0" step="5">
+        <div class="minmax"><span>today</span><span>+90 d</span></div>
       </div>
 
-      <div class="slider-block">
-        <div class="top-row"><span>${c.boomLabel}</span><b id="boomVal-${c.id}">${(c.boomMin+c.boomMax)/2|0} m</b></div>
-        <input type="range" id="boom-${c.id}" min="${c.boomMin}" max="${c.boomMax}" value="${(c.boomMin+c.boomMax)/2|0}" step="1">
-        <div class="minmax"><span>${c.boomMin}m</span><span>${c.boomMax}m</span></div>
-      </div>
+      <div class="unit-list">${unitRows}</div>
 
-      <div class="note">Illustrative rating — for reference only, not a certified load or payload chart</div>
+      <div class="note">Sample service records — for demonstration only, not live fleet data</div>
     </div>
   </div>`);
 });
 
 function update(c){
-  const reachInput = document.getElementById(`reach-${c.id}`);
-  const boomInput = document.getElementById(`boom-${c.id}`);
-  const radiusVal = Number(reachInput.value);
-  const boomVal = Number(boomInput.value);
+  const forecastInput = document.getElementById(`forecast-${c.id}`);
+  const forecast = Number(forecastInput.value);
+  document.getElementById(`forecastVal-${c.id}`).textContent = `+${forecast} d`;
 
-  document.getElementById(`reachVal-${c.id}`).textContent = `${radiusVal} ${c.reachUnit}`;
-  document.getElementById(`boomVal-${c.id}`).textContent = `${boomVal} m`;
+  let flaggedCount = 0;
 
-  const cap = ratedCapacity(c, radiusVal);
-  document.getElementById(`cap-${c.id}`).innerHTML = `${cap}<span class="unit">${c.capUnit}</span>`;
+  c.units.forEach(u => {
+    const projectedDays = u.daysSince + forecast;
+    const pct = Math.min(130, Math.round((projectedDays / c.intervalDays) * 100));
+    const status = statusFor(pct);
+    const daysOver = Math.max(0, projectedDays - c.intervalDays);
 
-  document.getElementById(`diagram-${c.id}`).innerHTML = buildDiagramSVG(c, radiusVal, boomVal);
+    if (status !== "ok") flaggedCount++;
+
+    const row = document.getElementById(`row-${c.id}-${u.id}`);
+    row.className = `unit-row status-${status}`;
+
+    const badge = document.getElementById(`badge-${c.id}-${u.id}`);
+    badge.className = `badge ${status}`;
+    badge.textContent = statusLabel(status, daysOver);
+
+    const bar = document.getElementById(`bar-${c.id}-${u.id}`);
+    bar.style.width = `${Math.min(100, pct)}%`;
+    bar.style.background = barColor(status);
+
+    document.getElementById(`meta-${c.id}-${u.id}`).textContent =
+      `${projectedDays}d since service · ${c.intervalDays}d interval`;
+  });
+
+  const alertEl = document.getElementById(`alert-${c.id}`);
+  alertEl.innerHTML = `${flaggedCount}<span class="unit">/${c.units.length}</span>`;
+  alertEl.className = flaggedCount === 0 ? "value clear" : "value";
+
+  document.getElementById(`navflag-${c.id}`).textContent = flaggedCount;
+
+  return flaggedCount;
 }
 
-CRANES.forEach(c => {
-  document.getElementById(`reach-${c.id}`).addEventListener("input", () => update(c));
-  document.getElementById(`boom-${c.id}`).addEventListener("input", () => update(c));
-  update(c);
+function updateTotals(){
+  let totalUnits = 0, totalFlagged = 0;
+  CLASSES.forEach(c => {
+    totalUnits += c.units.length;
+    totalFlagged += update(c);
+  });
+  document.getElementById("totalUnits").textContent = totalUnits;
+  document.getElementById("totalFlagged").textContent = totalFlagged;
+}
+
+CLASSES.forEach(c => {
+  document.getElementById(`forecast-${c.id}`).addEventListener("input", updateTotals);
 });
+
+updateTotals();
 </script>
 </body>
 </html>
