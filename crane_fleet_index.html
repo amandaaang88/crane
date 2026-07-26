@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crane Fleet Configurator — Crane Index</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+:root{
+  --bg:#FFD400;
+  --ink:#1B1B1B;
+  --card:#FFFFFF;
+  --muted:#5A5346;
+  --muted-2:#8C8570;
+  --line:rgba(27,27,27,0.14);
+  --line-strong:rgba(27,27,27,0.30);
+  --diagram-bg:#1B1B1B;
+  --cyan:#1F6E7A;
+  --radius-s:2px;
+  --radius-m:3px;
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:
+    radial-gradient(ellipse 1200px 600px at 20% -10%, rgba(27,27,27,0.05), transparent),
+    linear-gradient(var(--bg), var(--bg));
+  color:var(--ink);
+  font-family:'Inter',sans-serif;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+}
+
+/* faint blueprint grid */
+.grid-bg{
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background-image:
+    linear-gradient(var(--line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  background-size:64px 64px;
+  opacity:0.5;
+  mask-image:linear-gradient(to bottom, rgba(0,0,0,0.9), rgba(0,0,0,0.5) 60%, transparent 100%);
+}
+
+.wrap{position:relative; z-index:1; max-width:1180px; margin:0 auto; padding:0 28px 120px;}
+
+/* ---------- HERO ---------- */
+.hero{padding:64px 0 40px; border-bottom:1px solid var(--line);}
+.eyebrow{
+  font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:0.18em;
+  text-transform:uppercase; color:var(--ink); font-weight:600; display:flex; align-items:center; gap:10px;
+}
+.eyebrow::before{content:""; width:22px; height:1px; background:var(--ink);}
+h1.title{
+  font-family:'Oswald',sans-serif; font-weight:700; text-transform:uppercase;
+  font-size:clamp(38px,6vw,72px); line-height:0.98; letter-spacing:0.01em;
+  margin:18px 0 6px; color:var(--ink);
+}
+h1.title span{color:var(--muted); font-weight:500;}
+.subtitle{max-width:560px; color:var(--muted); font-size:15.5px; line-height:1.6; margin:14px 0 34px;}
+
+.hero-grid{display:grid; grid-template-columns:1.3fr 1fr; gap:22px; margin-top:8px;}
+@media (max-width:860px){.hero-grid{grid-template-columns:1fr;}}
+
+.photo-slot{
+  position:relative; border:1.5px dashed var(--line-strong); border-radius:var(--radius-m);
+  background:var(--card) repeating-linear-gradient(135deg, rgba(27,27,27,0.03) 0 10px, transparent 10px 20px);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  color:var(--muted); text-align:center; gap:10px; min-height:180px;
+}
+.photo-slot .cam{opacity:0.7;}
+.photo-slot .lbl{font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted);}
+.photo-slot .dim{font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted-2);}
+.hero-photo{min-height:280px;}
+
+.hero-stats{display:flex; flex-direction:column; gap:0; border:1px solid var(--line); border-radius:var(--radius-m); overflow:hidden; background:var(--card);}
+.hero-stat{padding:18px 20px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:baseline;}
+.hero-stat:last-child{border-bottom:none;}
+.hero-stat .k{font-family:'JetBrains Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted);}
+.hero-stat .v{font-family:'JetBrains Mono',monospace; font-size:20px; color:var(--ink); font-weight:700;}
+
+/* ---------- INDEX NAV ---------- */
+.index-nav{
+  position:sticky; top:0; z-index:5; margin:0 -28px 42px; padding:14px 28px;
+  background:rgba(255,255,255,0.86); backdrop-filter:blur(8px); border-bottom:1px solid var(--line);
+  display:flex; gap:8px; overflow-x:auto; scrollbar-width:none;
+}
+.index-nav::-webkit-scrollbar{display:none;}
+.index-nav a{
+  flex:0 0 auto; font-family:'JetBrains Mono',monospace; font-size:11.5px; letter-spacing:0.04em;
+  color:var(--muted); text-decoration:none; padding:8px 14px; border:1px solid var(--line);
+  border-radius:20px; white-space:nowrap; transition:all .15s ease; display:flex; align-items:center; gap:7px;
+}
+.index-nav a:hover, .index-nav a:focus-visible{color:var(--ink); border-color:var(--ink); background:rgba(27,27,27,0.06);}
+.index-nav a .dot{width:6px; height:6px; border-radius:50%; background:var(--cyan);}
+.index-nav a[data-cat="marine"] .dot{background:var(--cyan);}
+.index-nav a[data-cat="land"] .dot{background:var(--ink);}
+
+section.section-head{margin:0 0 26px;}
+.section-head .num{font-family:'JetBrains Mono',monospace; color:var(--muted-2); font-size:12px;}
+.section-head h2{font-family:'Oswald',sans-serif; text-transform:uppercase; font-size:26px; margin:2px 0 0; letter-spacing:0.01em;}
+
+/* ---------- CRANE CARDS ---------- */
+.fleet{display:flex; flex-direction:column; gap:20px;}
+.card{
+  scroll-margin-top:76px;
+  border:1px solid var(--line); border-radius:var(--radius-m);
+  background:var(--card);
+  box-shadow:0 3px 18px rgba(27,27,27,0.10);
+  padding:26px; display:grid; grid-template-columns:1fr 1fr 1.1fr; gap:28px;
+}
+@media (max-width:980px){.card{grid-template-columns:1fr;}}
+
+.card-photo{display:flex; flex-direction:column; gap:14px;}
+.card .photo-slot{aspect-ratio:4/3; min-height:0;}
+.cam svg{width:26px; height:26px;}
+
+.card-info .cat-tag{
+  font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:0.1em; text-transform:uppercase;
+  display:inline-flex; align-items:center; gap:6px; padding:4px 9px; border:1px solid var(--line-strong);
+  border-radius:20px; color:var(--muted); margin-bottom:14px;
+}
+.cat-tag .dot{width:6px; height:6px; border-radius:50%;}
+.card-info h3{font-family:'Oswald',sans-serif; text-transform:uppercase; font-size:24px; margin:0 0 4px; letter-spacing:0.01em; color:var(--ink);}
+.card-info .model{font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted); margin-bottom:14px;}
+.card-info p.desc{font-size:14px; line-height:1.65; color:var(--muted); margin:0 0 18px;}
+.diagram{border:1px solid #333; border-radius:var(--radius-s); background:var(--diagram-bg); padding:8px;}
+
+.controls{display:flex; flex-direction:column; gap:20px;}
+.readout{
+  display:flex; justify-content:space-between; align-items:flex-end;
+  border-bottom:1px solid var(--line); padding-bottom:14px;
+}
+.readout .label{font-family:'JetBrains Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted);}
+.readout .value{
+  font-family:'JetBrains Mono',monospace; font-size:26px; font-weight:700; color:var(--ink); line-height:1;
+  background:var(--bg); padding:6px 16px; border-radius:999px; display:inline-block;
+}
+.readout .unit{font-size:13px; color:var(--ink); opacity:0.7; font-weight:400; margin-left:3px;}
+
+.slider-block{display:flex; flex-direction:column; gap:8px;}
+.slider-block .top-row{display:flex; justify-content:space-between; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted);}
+.slider-block .top-row b{color:var(--ink); font-size:12.5px;}
+
+input[type="range"]{
+  -webkit-appearance:none; appearance:none; width:100%; height:2px;
+  background:var(--line-strong); border-radius:2px; outline:none; cursor:pointer;
+}
+input[type="range"]::-webkit-slider-thumb{
+  -webkit-appearance:none; width:16px; height:16px; border-radius:50%;
+  background:var(--bg); border:2px solid var(--ink); cursor:pointer;
+  box-shadow:0 0 0 1px rgba(27,27,27,0.12);
+}
+input[type="range"]::-moz-range-thumb{
+  width:16px; height:16px; border-radius:50%; background:var(--bg);
+  border:2px solid var(--ink); cursor:pointer;
+}
+.minmax{display:flex; justify-content:space-between; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted-2);}
+
+.note{font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted-2); margin-top:2px;}
+
+/* ---------- FOOTER ---------- */
+footer{margin-top:60px; padding-top:24px; border-top:1px solid var(--line); display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px;}
+footer .f-l{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted-2); letter-spacing:0.04em;}
+footer .f-r{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted-2);}
+
+@media (prefers-reduced-motion:no-preference){
+  .card{transition:border-color .2s ease;}
+  .card:hover{border-color:var(--line-strong);}
+}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="wrap">
+
+  <div class="hero">
+    <div class="eyebrow">TWC — Fleet Reference</div>
+    <h1 class="title">Crane Fleet<br><span>Configurator</span></h1>
+    <p class="subtitle">An interactive index of TWC's lifting fleet. Adjust radius and reach on each unit to see how rated capacity responds — the same trade-off crews read off a load chart on site. Photo placeholders are marked for site and yard photography.</p>
+
+    <div class="hero-grid">
+      <div class="photo-slot hero-photo">
+        <div class="cam">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.4"/></svg>
+        </div>
+        <div class="lbl">Hero photograph — flagship lift in progress</div>
+        <div class="dim">suggested 16:9 · landscape · on-site</div>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat"><span class="k">Fleet units indexed</span><span class="v">05</span></div>
+        <div class="hero-stat"><span class="k">Max rated capacity</span><span class="v">3,000<span class="unit">t</span></span></div>
+        <div class="hero-stat"><span class="k">Operating markets</span><span class="v">SG · MY · PNG</span></div>
+        <div class="hero-stat"><span class="k">Service class</span><span class="v">Heavy Lift</span></div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="index-nav" id="indexNav" aria-label="Crane type index"></nav>
+
+  <div class="section-head">
+    <div class="num">INDEX / 01–05</div>
+    <h2>Fleet by type</h2>
+  </div>
+
+  <div class="fleet" id="fleet"></div>
+
+  <footer>
+    <div class="f-l">TWC FLEET CONFIGURATOR — INTERNAL MARKETING TOOL</div>
+    <div class="f-r">Capacities shown are illustrative load-chart approximations, not certified ratings</div>
+  </footer>
+
+</div>
+
+<script>
+const CRANES = [
+  {
+    id:"crawler", cat:"land", num:"01",
+    name:"Crawler Crane", model:"TWC-CR / TRACKED CLASS",
+    desc:"Tracked heavy-lift crane for congested yards and soft ground. Self-erecting boom, high capacity at short radius, used on the majority of TWC's plant-relocation and module lifts.",
+    capMin:50, capMax:800, capDefault:400, capUnit:"t",
+    reachLabel:"Working radius", reachMin:8, reachMax:40, reachDefault:16, reachUnit:"m",
+    boomLabel:"Boom length", boomMin:30, boomMax:90
+  },
+  {
+    id:"allterrain", cat:"land", num:"02",
+    name:"All-Terrain Mobile Crane", model:"TWC-AT / ROAD-LEGAL CLASS",
+    desc:"Road-legal mobile crane for fast mobilisation between sites. Telescopic boom trades peak capacity for reach and set-up speed, ideal for shorter-duration lifts.",
+    capMin:25, capMax:500, capDefault:220, capUnit:"t",
+    reachLabel:"Working radius", reachMin:5, reachMax:36, reachDefault:12, reachUnit:"m",
+    boomLabel:"Boom length", boomMin:30, boomMax:80
+  },
+  {
+    id:"tower", cat:"land", num:"03",
+    name:"Tower Crane", model:"TWC-TC / VERTICAL CLASS",
+    desc:"Fixed vertical-reach crane for long-duration builds. Capacity trails off sharply with jib length, so contracts are planned around the load chart's far-radius figures.",
+    capMin:4, capMax:20, capDefault:10, capUnit:"t",
+    reachLabel:"Jib radius", reachMin:15, reachMax:70, reachDefault:35, reachUnit:"m",
+    boomLabel:"Jib length", boomMin:30, boomMax:70
+  },
+  {
+    id:"marine", cat:"marine", num:"04",
+    name:"Marine Sheerleg Crane", model:"TWC-MS / FLOATING CLASS",
+    desc:"Floating sheerleg for offshore module installs and quayside heavy lifts. Very high capacity at short radius, deployed with TWC's marine logistics division.",
+    capMin:200, capMax:3000, capDefault:1200, capUnit:"t",
+    reachLabel:"Working radius", reachMin:6, reachMax:30, reachDefault:12, reachUnit:"m",
+    boomLabel:"Boom length", boomMin:25, boomMax:55
+  },
+  {
+    id:"gantry", cat:"land", num:"05",
+    name:"Gantry / Strand Jack System", model:"TWC-GS / MODULAR CLASS",
+    desc:"Modular strand-jack gantry for super-heavy, low-speed transport and skidding operations where conventional boom geometry doesn't apply.",
+    capMin:100, capMax:2000, capDefault:600, capUnit:"t",
+    reachLabel:"Span", reachMin:10, reachMax:60, reachDefault:24, reachUnit:"m",
+    boomLabel:"Lift height", boomMin:10, boomMax:35
+  }
+];
+
+const catMeta = {
+  land:{label:"Land-based", dot:"var(--ink)"},
+  marine:{label:"Marine", dot:"var(--cyan)"}
+};
+
+function ratedCapacity(c, radius){
+  // illustrative inverse relationship anchored to card's own capacity range
+  const rMin = c.reachMin, rMax = c.reachMax;
+  const t = (radius - rMin) / (rMax - rMin); // 0..1
+  const factor = Math.pow(1 - t, 1.6); // capacity falls off as radius grows
+  const cap = c.capMin + (c.capMax - c.capMin) * factor;
+  return Math.max(c.capMin, Math.round(cap));
+}
+
+function buildDiagramSVG(c, radiusVal, boomVal){
+  const w = 340, h = 190;
+  const groundY = h - 22;
+  const pivotX = 60, pivotY = groundY - (c.id === "gantry" ? 60 : 30);
+
+  const rNorm = (radiusVal - c.reachMin) / (c.reachMax - c.reachMin);
+  const angleDeg = 68 - rNorm * 46; // 68deg (short radius) -> 22deg (long radius)
+  const angleRad = angleDeg * Math.PI / 180;
+
+  const bNorm = (boomVal - c.boomMin) / (c.boomMax - c.boomMin);
+  const boomPx = 90 + bNorm * 130;
+
+  const tipX = pivotX + Math.cos(angleRad) * boomPx;
+  const tipY = pivotY - Math.sin(angleRad) * boomPx;
+
+  const hookY = groundY - 6;
+
+  return `
+  <svg viewBox="0 0 ${w} ${h}" width="100%" height="150" xmlns="http://www.w3.org/2000/svg">
+    <line x1="10" y1="${groundY}" x2="${w-10}" y2="${groundY}" stroke="rgba(255,212,0,0.30)" stroke-width="1"/>
+    <rect x="${pivotX-14}" y="${pivotY-6}" width="28" height="${groundY-(pivotY-6)}" fill="none" stroke="#8C8570" stroke-width="1.2" rx="1"/>
+    <line x1="${pivotX}" y1="${pivotY}" x2="${tipX}" y2="${tipY}" stroke="#FFD400" stroke-width="2.2" stroke-linecap="round"/>
+    <line x1="${tipX}" y1="${tipY}" x2="${tipX}" y2="${hookY}" stroke="#B9B4A6" stroke-width="1" stroke-dasharray="2 2"/>
+    <rect x="${tipX-6}" y="${hookY-6}" width="12" height="12" fill="none" stroke="#6FD8E3" stroke-width="1.4"/>
+    <circle cx="${pivotX}" cy="${pivotY}" r="3" fill="#FFD400"/>
+    <line x1="${pivotX}" y1="${groundY}" x2="${tipX}" y2="${groundY}" stroke="rgba(255,212,0,0.35)" stroke-width="1" stroke-dasharray="3 3"/>
+    <text x="${(pivotX+tipX)/2}" y="${groundY+14}" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#B9B4A6">R = ${radiusVal}m</text>
+  </svg>`;
+}
+
+const fleetEl = document.getElementById("fleet");
+const navEl = document.getElementById("indexNav");
+
+CRANES.forEach(c => {
+  const meta = catMeta[c.cat];
+
+  navEl.insertAdjacentHTML("beforeend",
+    `<a href="#${c.id}" data-cat="${c.cat}"><span class="dot"></span>${c.name}</a>`);
+
+  fleetEl.insertAdjacentHTML("beforeend", `
+  <div class="card" id="${c.id}">
+    <div class="card-photo">
+      <div class="photo-slot">
+        <div class="cam"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.4"/></svg></div>
+        <div class="lbl">Photo — ${c.name}</div>
+        <div class="dim">suggested 4:3 · on site</div>
+      </div>
+      <div class="diagram" id="diagram-${c.id}"></div>
+    </div>
+
+    <div class="card-info">
+      <div class="cat-tag"><span class="dot" style="background:${meta.dot}"></span>${meta.label} · ${c.num}</div>
+      <h3>${c.name}</h3>
+      <div class="model">${c.model}</div>
+      <p class="desc">${c.desc}</p>
+    </div>
+
+    <div class="controls">
+      <div class="readout">
+        <div>
+          <div class="label">Rated capacity at radius</div>
+          <div class="value" id="cap-${c.id}">${c.capDefault}<span class="unit">${c.capUnit}</span></div>
+        </div>
+      </div>
+
+      <div class="slider-block">
+        <div class="top-row"><span>${c.reachLabel}</span><b id="reachVal-${c.id}">${c.reachDefault} ${c.reachUnit}</b></div>
+        <input type="range" id="reach-${c.id}" min="${c.reachMin}" max="${c.reachMax}" value="${c.reachDefault}" step="1">
+        <div class="minmax"><span>${c.reachMin}${c.reachUnit}</span><span>${c.reachMax}${c.reachUnit}</span></div>
+      </div>
+
+      <div class="slider-block">
+        <div class="top-row"><span>${c.boomLabel}</span><b id="boomVal-${c.id}">${(c.boomMin+c.boomMax)/2|0} m</b></div>
+        <input type="range" id="boom-${c.id}" min="${c.boomMin}" max="${c.boomMax}" value="${(c.boomMin+c.boomMax)/2|0}" step="1">
+        <div class="minmax"><span>${c.boomMin}m</span><span>${c.boomMax}m</span></div>
+      </div>
+
+      <div class="note">Illustrative rating — for reference only, not a certified load chart</div>
+    </div>
+  </div>`);
+});
+
+function update(c){
+  const reachInput = document.getElementById(`reach-${c.id}`);
+  const boomInput = document.getElementById(`boom-${c.id}`);
+  const radiusVal = Number(reachInput.value);
+  const boomVal = Number(boomInput.value);
+
+  document.getElementById(`reachVal-${c.id}`).textContent = `${radiusVal} ${c.reachUnit}`;
+  document.getElementById(`boomVal-${c.id}`).textContent = `${boomVal} m`;
+
+  const cap = ratedCapacity(c, radiusVal);
+  document.getElementById(`cap-${c.id}`).innerHTML = `${cap}<span class="unit">${c.capUnit}</span>`;
+
+  document.getElementById(`diagram-${c.id}`).innerHTML = buildDiagramSVG(c, radiusVal, boomVal);
+}
+
+CRANES.forEach(c => {
+  document.getElementById(`reach-${c.id}`).addEventListener("input", () => update(c));
+  document.getElementById(`boom-${c.id}`).addEventListener("input", () => update(c));
+  update(c);
+});
+</script>
+</body>
+</html>
